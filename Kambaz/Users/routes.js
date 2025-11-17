@@ -1,10 +1,33 @@
 import UsersDao from "./dao.js";
+
 export default function UserRoutes(app, db) {
   const dao = UsersDao(db);
-  const createUser = (req, res) => { };
-  const deleteUser = (req, res) => { };
-  const findAllUsers = (req, res) => { };
-  const findUserById = (req, res) => { };
+
+  const createUser = (req, res) => {
+    const newUser = dao.createUser(req.body);
+    res.json(newUser);
+  };
+
+  const deleteUser = (req, res) => {
+    const { userId } = req.params;
+    dao.deleteUser(userId);
+    res.sendStatus(200);
+  };
+
+  const findAllUsers = (req, res) => {
+    const users = dao.findAllUsers();
+    res.json(users);
+  };
+
+  const findUserById = (req, res) => {
+    const { userId } = req.params;
+    const user = dao.findUserById(userId);
+    if (!user) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json(user);
+  };
 
   const updateUser = (req, res) => {
     const userId = req.params.userId;
@@ -12,20 +35,17 @@ export default function UserRoutes(app, db) {
     dao.updateUser(userId, userUpdates);
     const currentUser = dao.findUserById(userId);
     req.session["currentUser"] = currentUser;
-
     res.json(currentUser);
   };
 
   const signup = (req, res) => {
     const user = dao.findUserByUsername(req.body.username);
     if (user) {
-      res.status(400).json(
-        { message: "Username already in use" });
+      res.status(400).json({ message: "Username already in use" });
       return;
     }
     const currentUser = dao.createUser(req.body);
     req.session["currentUser"] = currentUser;
-
     res.json(currentUser);
   };
 
@@ -39,12 +59,13 @@ export default function UserRoutes(app, db) {
       res.status(401).json({ message: "Unable to login. Try again later." });
     }
   };
+
   const signout = (req, res) => {
     req.session.destroy();
     res.sendStatus(200);
   };
 
-  const profile = async (req, res) => {
+  const profile = (req, res) => {
     const currentUser = req.session["currentUser"];
     if (!currentUser) {
       res.sendStatus(401);
@@ -63,4 +84,3 @@ export default function UserRoutes(app, db) {
   app.post("/api/users/signout", signout);
   app.post("/api/users/profile", profile);
 }
-
