@@ -12,6 +12,7 @@ export default function CoursesDao(db) {
     function createCourse(course) {
         const newCourse = { ...course, _id: uuidv4() };
         db.courses = [...db.courses, newCourse];
+        console.log(db.courses);
         return newCourse;
     }
     function deleteCourse(courseId) {
